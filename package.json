@@ -1,0 +1,17 @@
+{
+  "name": "com.leorusgames.owl-publishing-kit",
+  "version": "2.0.0-beta.1",
+  "displayName": "Owl Publishing Kit",
+  "description": "Unity toolkit for startup orchestration, ads, in-app purchases, Firebase, analytics, attribution, and push notifications.",
+  "keywords": [
+    "owl",
+    "publishing",
+    "ads",
+    "analytics",
+    "mobile",
+    "iap"
+  ],
+  "dependencies": {
+    "com.unity.ugui": "2.0.0"
+  }
+}

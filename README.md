@@ -2,7 +2,7 @@
 
 Owl is a Unity toolkit for mobile game publishing services. It coordinates startup, privacy and consent gates, in-app purchase ownership, ads, analytics, attribution, Firebase products, and push notifications from one Owl Settings window.
 
-This repository is intentionally an **asset folder**, not a full Unity project or a UPM package. It contains the `Owl` folder only; it does not include project settings, provider SDKs, developer credentials, or ad configuration assets.
+This repository is a Unity Package Manager (UPM) package. It contains the `Owl/` asset folder and package metadata; it is not a full Unity project. Project settings, provider SDKs, developer credentials, and ad configuration assets are not included.
 
 ## Contents
 
@@ -20,16 +20,38 @@ The editor creates an ad configuration asset in your project when you first open
 - Unity In-App Purchasing if you enable Owl IAP.
 - Provider SDKs for the integrations you turn on. They are optional and are not bundled here.
 
-## Install the Owl folder
+## Install through Unity Package Manager
 
-1. Download or clone this repository.
-2. Copy the `Owl` folder into your Unity project's `Assets` directory. The resulting path should be `Assets/Owl`.
-3. Let Unity import the assets and preserve the `.meta` files so prefab and asset references remain intact.
-4. Open **Owl > Settings**. Configure the providers and features you need, then save.
-5. Use **Owl > Create Owl** to add the Owl manager to the active scene. Place it in an early scene that remains alive during startup.
-6. Enable **Automatic startup** in Owl Settings, or call `OwlManager.Initialize()` after the manager is present to start manually.
+### Package Manager window
 
-Do not copy a game project's `ProjectSettings` into this repository. Unity project configuration, service configuration files, and credentials belong to each consuming game.
+1. In Unity, open **Window > Package Management > Package Manager**.
+2. Click **+ > Add package from git URL…**.
+3. Enter this URL:
+
+   ```text
+   https://github.com/sadiqhusaini/OwlPublishingKit.git
+   ```
+
+4. Click **Add** and wait for Unity to resolve the package and compile scripts.
+
+### Project manifest
+
+To add the package directly in `Packages/manifest.json`, add this entry to the `dependencies` object:
+
+```json
+"com.leorusgames.owl-publishing-kit": "https://github.com/sadiqhusaini/OwlPublishingKit.git#main"
+```
+
+For reproducible builds, replace `main` with a release tag or commit hash once you publish one. The package declares its required uGUI dependency. In-App Purchasing and all ad, analytics, attribution, Firebase, and Meta SDKs are optional; install the ones you enable from their publishers or the **Owl > SDKs** menu.
+
+### Complete setup
+
+1. Add the package using either method above.
+2. Open **Owl > Settings**. Configure the providers/features you need and save. Owl creates a project-local ad configuration asset when needed; set your own ad unit IDs.
+3. Use **Owl > Create Owl** to add the Owl manager to the active scene. Place it in an early scene that remains alive during startup.
+4. Enable **Automatic startup** in Owl Settings, or call `OwlManager.Initialize()` after the manager is present to start manually.
+
+The package does not include a game's `ProjectSettings`, service configuration files, credentials, or ad unit IDs. Those belong to each consuming Unity project.
 
 ## Optional provider SDKs
 
