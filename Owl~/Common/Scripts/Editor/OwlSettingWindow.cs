@@ -1152,37 +1152,55 @@ namespace Owl.Common
             return false;
         }
 
+        private static bool HasType(string fullName)
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                if (assembly.GetType(fullName, false) != null)
+                    return true;
+            return false;
+        }
+
         // ReSharper disable Unity.PerformanceAnalysis
         [Obsolete("Obsolete")]
         private void SetSymbolsDirectives()
         {
             // --- Mediation defines ---
-            bool useGoogleAds = _mediation == Mediation.GoogleAds;
-            bool useMaxAds = _mediation == Mediation.Max;
+            bool useGoogleAds = _mediation == Mediation.GoogleAds &&
+                                HasType("GoogleMobileAds.Api.MobileAds");
+            bool useMaxAds = _mediation == Mediation.Max && HasType("MaxSdkBase");
 
             bool useFirebase = _useFirebaseEventProvider;
             bool useGameAnalytics = _useGameAnalyticsEventProvider;
+            bool firebaseInstalled = HasType("Firebase.FirebaseApp");
+            bool firebaseAnalyticsInstalled = HasType("Firebase.Analytics.FirebaseAnalytics");
+            bool firebaseCrashlyticsInstalled = HasType("Firebase.Crashlytics.Crashlytics");
+            bool firebaseRemoteConfigInstalled = HasType("Firebase.RemoteConfig.FirebaseRemoteConfig");
+            bool gameAnalyticsInstalled = HasType("GameAnalyticsSDK.GameAnalytics");
+            bool facebookInstalled = HasFacebookSdk();
+            bool airbridgeInstalled = HasType("AirbridgeUnity");
+            bool solarEngineInstalled = HasType("SolarEngine.Analytics");
+            bool iapInstalled = HasType("UnityEngine.Purchasing.StoreController");
 
             DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_ADMOB, useGoogleAds);
             DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_MAXADS, useMaxAds);
             DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_MMP, _owlSettings.useMMP);
-            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_AIRBRIDGE, _owlSettings.useMMP && _owlSettings.useAirbridge);
-            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_SOLARENGINE, _owlSettings.useMMP && _owlSettings.useSolarEngine);
+            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_AIRBRIDGE, _owlSettings.useMMP && _owlSettings.useAirbridge && airbridgeInstalled);
+            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_SOLARENGINE, _owlSettings.useMMP && _owlSettings.useSolarEngine && solarEngineInstalled);
 
             // --- Analytics defines ---
 
-            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FIREBASE, useFirebase);
-            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FIREBASEANALYTICS, useFirebase && _useFirebaseAnalytics);
-            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FIREBASECRASHLYTICS, useFirebase && _useFirebaseCrashlytics);
-            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FIREBASEREMOTECONFIG, useFirebase && _useFirebaseRemoteConfig);
+            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FIREBASE, useFirebase && firebaseInstalled);
+            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FIREBASEANALYTICS, useFirebase && _useFirebaseAnalytics && firebaseAnalyticsInstalled);
+            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FIREBASECRASHLYTICS, useFirebase && _useFirebaseCrashlytics && firebaseCrashlyticsInstalled);
+            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FIREBASEREMOTECONFIG, useFirebase && _useFirebaseRemoteConfig && firebaseRemoteConfigInstalled);
             DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FIREBASEMESSAGING, useFirebase && _useFirebaseMessaging && HasFirebaseMessaging());
-            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_GAMEANALYTICS, useGameAnalytics);
-            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FACEBOOK, _useFacebookEvents);
+            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_GAMEANALYTICS, useGameAnalytics && gameAnalyticsInstalled);
+            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FACEBOOK, _useFacebookEvents && facebookInstalled);
             DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_FACEBOOK_SDK,
-                _useFacebookEvents && HasFacebookSdk());
+                _useFacebookEvents && facebookInstalled);
 
             // --- IAP define ---
-            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_IAP, _owlSettings.useIap);
+            DefineSymbolUtility.ScriptingDefineSymbol(Constants.USE_IAP, _owlSettings.useIap && iapInstalled);
         }
 
 

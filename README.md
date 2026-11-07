@@ -2,14 +2,14 @@
 
 Owl is a Unity toolkit for mobile game publishing services. It coordinates startup, privacy and consent gates, in-app purchase ownership, ads, analytics, attribution, Firebase products, and push notifications from one Owl Settings window.
 
-This repository is a Unity Package Manager (UPM) package. It contains the `Owl/` asset folder and package metadata; it is not a full Unity project. Project settings, provider SDKs, developer credentials, and ad configuration assets are not included.
+This repository is a Unity Package Manager (UPM) package. After installation, a small editor installer copies the Owl assets into `Assets/Owl`, where the runtime scripts can compile together with the optional provider SDKs in the project. The package is not a full Unity project; project settings, provider SDKs, developer credentials, and ad configuration assets are not included.
 
 ## Contents
 
-- `Owl/` — Unity assets, scripts, prefabs, editor tools, settings resources, and UI.
-- `Owl/Common/Resources/OwlSettings.asset` — default Owl settings asset.
-- `Owl/Common/Resources/OwlManager.prefab` — manager prefab used by the editor menu.
-- `Owl/Utility/Prefabs/OwlStatusCanvas.prefab` — optional runtime flow diagnostics overlay.
+- `Assets/Owl/` — installed Unity assets, scripts, prefabs, editor tools, settings resources, and UI.
+- `Assets/Owl/Common/Resources/OwlSettings.asset` — default Owl settings asset.
+- `Assets/Owl/Common/Resources/OwlManager.prefab` — manager prefab used by the editor menu.
+- `Assets/Owl/Utility/Prefabs/OwlStatusCanvas.prefab` — optional runtime flow diagnostics overlay.
 
 The editor creates an ad configuration asset in your project when you first open Owl Settings if one does not exist. Configure your own ad IDs and provider settings there. The primary folders are `Common` (settings, bootstrap, editor window), `Monetization` (ad and IAP flows), `Analytics` (analytics and attribution), `Notifications` (Firebase Messaging), and `Utility` (consent, internet checks, UI, and diagnostics).
 
@@ -32,7 +32,9 @@ The editor creates an ad configuration asset in your project when you first open
    https://github.com/sadiqhusaini/OwlPublishingKit.git
    ```
 
-4. Click **Add** and wait for Unity to resolve the package and compile scripts.
+4. Click **Add**. The package installs its assets into `Assets/Owl` automatically.
+
+If `Assets/Owl` already exists, automatic installation leaves it untouched. Use **Owl > Install or Update Assets** to update it; Unity asks before overwriting the folder's package files.
 
 ### Project manifest
 
@@ -42,7 +44,7 @@ To add the package directly in `Packages/manifest.json`, add this entry to the `
 "com.sadiqhusaini.owl-publishing-kit": "https://github.com/sadiqhusaini/OwlPublishingKit.git#main"
 ```
 
-For reproducible builds, replace `main` with a release tag or commit hash once you publish one. The package declares uGUI and In-App Purchasing dependencies and includes runtime/editor assembly definitions so Unity compiles scripts installed from `Packages`. Ad, analytics, attribution, Firebase, and Meta SDKs remain optional; install the ones you enable from their publishers or the **Owl > SDKs** menu.
+For reproducible builds, replace `main` with a release tag or commit hash once you publish one. The package installs uGUI, In-App Purchasing, Unity Services Core, and iOS Advertising Support dependencies. Its source assets are copied into `Assets/Owl` so Owl scripts and SDK integrations compile in the project. Ad, analytics, attribution, Firebase, and Meta SDKs remain optional; install the ones you enable from their publishers or the **Owl > SDKs** menu.
 
 ### Complete setup
 

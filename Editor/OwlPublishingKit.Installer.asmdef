@@ -1,11 +1,10 @@
 {
-  "name": "OwlPublishingKit.Runtime",
-  "rootNamespace": "Owl",
-  "references": [
-    "UnityEngine.UI",
-    "Unity.Purchasing"
+  "name": "OwlPublishingKit.Installer",
+  "rootNamespace": "OwlPublishingKit",
+  "references": [],
+  "includePlatforms": [
+    "Editor"
   ],
-  "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,
