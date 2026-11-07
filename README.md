@@ -32,7 +32,7 @@ The editor creates an ad configuration asset in your project when you first open
    https://github.com/sadiqhusaini/OwlPublishingKit.git
    ```
 
-4. Click **Add**. The package installs its assets into `Assets/Owl` automatically.
+4. Click **Add**. The package installs its assets into `Assets/Owl` automatically and selects that folder in the Project window. Use **Owl > Show Installed Assets** any time to locate it again.
 
 If `Assets/Owl` already exists, automatic installation leaves it untouched. Use **Owl > Install or Update Assets** to update it; Unity asks before overwriting the folder's package files.
 

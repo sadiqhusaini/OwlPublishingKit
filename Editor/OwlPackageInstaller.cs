@@ -27,6 +27,20 @@ namespace OwlPublishingKit
             Install(promptBeforeOverwrite: true);
         }
 
+        [MenuItem("Owl/Show Installed Assets", false, 2)]
+        private static void ShowInstalledAssets()
+        {
+            var folder = AssetDatabase.LoadAssetAtPath<DefaultAsset>("Assets/Owl");
+            if (folder == null)
+            {
+                Debug.LogWarning("Owl assets are not installed in Assets/Owl yet. Reimport the package or run Owl > Install or Update Assets.");
+                return;
+            }
+
+            Selection.activeObject = folder;
+            EditorGUIUtility.PingObject(folder);
+        }
+
         private static void InstallIfMissing()
         {
             Install(promptBeforeOverwrite: false);
@@ -127,6 +141,12 @@ namespace OwlPublishingKit
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             Debug.Log($"Owl Publishing Kit assets installed to Assets/{DestinationFolderName}.");
+            var installedFolder = AssetDatabase.LoadAssetAtPath<DefaultAsset>($"Assets/{DestinationFolderName}");
+            if (installedFolder != null)
+            {
+                Selection.activeObject = installedFolder;
+                EditorGUIUtility.PingObject(installedFolder);
+            }
         }
 
         private static Dictionary<string, string> FindGuidConflicts(string source, string sourceMeta)
