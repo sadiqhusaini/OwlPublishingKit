@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71aaa7a34813d47389a63a81f24f3b5c, type: 3}
+  m_Name: OwlSettings
+  m_EditorClassIdentifier: 
+  bannerAd: 0
+  interstitialAd: 0
+  rewardedAd: 0
+  rewardedInterstitialAd: 0
+  mRecAd: 0
+  appOpenAd: 0
+  SDKName: Owl
+  IconTexture: {fileID: 2800000, guid: 73a54c579c29847779f25e4f8c768e1e, type: 3}
+  SDKVersion: {fileID: 11400000, guid: 687c86c85fdcd4e379ff7ccd6170453a, type: 2}
+  SDKLinks: {fileID: 11400000, guid: 71260c026885649b9836cf714b2c427e, type: 2}
+  OwlComponents: {fileID: 11400000, guid: 9701d703f188c4639b5cce0593246c9f, type: 2}
+  adSettings: {fileID: 11400000, guid: b05a4b91a64b84aa5873ed373767d83e, type: 2}
+  autoSDKInit: 1
+  screenSDKInfo: 1
+  verbose: 1
+  testIds: 1
+  mmpsdk: 0
+  analyticsSdk: 0
+  useMMP: 0
+  useAirbridge: 0
+  useSolarEngine: 0
+  useFirebaseAnalytics: 0
+  useFirebaseCrashlytics: 0
+  useFirebaseRemoteConfig: 0
+  useFirebaseMessaging: 0
+  requestPushPermissionOnStart: 1
+  useFacebookEvents: 0
+  useIap: 1
+  noAdsIds: []
+  mediation: 1
+  bannerPosition: 0
+  remoteCompleteAds: 0
+  remoteAppOpen: 0
+  remoteBanner: 0
+  remoteInterstitial: 0
+  remoteRewarded: 0
+  remoteRewardedInterstitial: 0
+  remoteMREC: 0
+  remoteTimedAds: 0
+  useAppOpenAd: 1
+  useBanner: 1
+  useInterstitialAd: 0
+  useRewardedAd: 1
+  useMREC: 1
+  useRewardedInterstitialAd: 0
+  interstitialOnStart: 1
+  rewardedInterstitialOnStart: 1
+  rewardedOnStart: 0
+  bannerOnStart: 1
+  enableTimerAd: 0
+  autoStartTimerAd: 0
+  resetIntervalOnRewarded: 0
+  showNoInternetUi: 0
+  showAdComingUi: 0
+  adComingWaitStep: 0.5
+  showBannerBgLayer: 1
+  showMrecBgLayer: 0
+  showIapLoadingUi: 0
+  solarEngineDebugMode: 1
+  appOpenStartDelay: 0
+  interstitialInterval: 5
+  timerAdInterval: 30
+  nativePopupText: This identifier will be used to deliver personalized ads to you.
+  solarEngineAppKey: 

@@ -1,0 +1,279 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d7dc47f3b4d445728e686a4534b19b8, type: 3}
+  m_Name: AdSettings
+  m_EditorClassIdentifier: Assembly-CSharp::Owl.Monetization.AdSettings
+  googleAds:
+    mode: 1
+    bannerAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    mRecAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    interstitialAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    rewardedInterstitialAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    rewardedAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    appOpenAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    appIdAndroid: 
+    appIdIOS: 
+    bannerAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 0
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    mRecAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    interstitialAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 0
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    rewardedInterstitialAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    rewardedAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    appOpenAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    _legacySingleIds:
+      bannerAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      mRecAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      interstitialAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      rewardedInterstitialAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      rewardedAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      appOpenAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+  maxAds:
+    mode: 1
+    bannerAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    mRecAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    interstitialAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    rewardedAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    appOpenAdUnit:
+      adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    sdkID: 
+    bannerAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 0
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 0
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    mRecAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    interstitialAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    rewardedAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    appOpenAdUnits:
+    - adUnitAndroid: 
+      adUnitIOS: 
+      adFloor: 2
+      _legacyIds:
+        adUnitAndroid: 
+        adUnitIOS: 
+    _legacySingleIds:
+      bannerAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      mRecAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      interstitialAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      rewardedInterstitialAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      rewardedAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 
+      appOpenAdUnit:
+        adUnitAndroid: 
+        adUnitIOS: 
+        adFloor: 2
+        _legacyIds:
+          adUnitAndroid: 
+          adUnitIOS: 

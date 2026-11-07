@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bea8bce43c2c43eb8bafc96122acb0b, type: 3}
+  m_Name: Components
+  m_EditorClassIdentifier: 
+  MrecPlacement: {fileID: 1819499973668485074, guid: 82e8eadf88def4b3f9357a26c1606ba0, type: 3}
+  OwlStatusCanvas: {fileID: 4153138511378182912, guid: c9021efb5e6c0492bbadf6ec09fbccf3, type: 3}
+  AdComingLayerCanvas: {fileID: 406253282247969683, guid: d60cca45906fd46008f60253b1200d63, type: 3}
+  TimerAdCanvas: {fileID: 3389303132290178574, guid: 3ec037c09b1fd48419e89029d3215e67, type: 3}
+  NoInternetCanvas: {fileID: 4261659564773958885, guid: 858cf2a0e84cc43c690ade4ddafb2b84, type: 3}
+  Att: {fileID: 6159299067578871493, guid: af0c0975cfc48462281bfc2c4100fe6d, type: 3}
+  IapLoadingCanvas: {fileID: 3117635522573930995, guid: 7cd0320c6d4004fb1a2d0bd5b80cbb74, type: 3}
+  BannerBgLayerCanvasP: {fileID: 5697842073340792823, guid: ac95f4533bf994df088f906dedef892b, type: 3}
+  BannerBgLayerCanvasL: {fileID: 7339623219161350251, guid: 5699ff0ea5e8d499fa51d1f717052bca, type: 3}
+  MrecBgLayerCanvasP: {fileID: 2345964535047805995, guid: 0e7e4a0777b3e4b439e9491079e69570, type: 3}
+  MrecBgLayerCanvasL: {fileID: 2345964535047805995, guid: 7593b13742c3d4fbe933159681398d63, type: 3}
