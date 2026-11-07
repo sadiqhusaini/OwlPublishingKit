@@ -81,7 +81,7 @@ namespace OwlPublishingKit
 
             try
             {
-                return PackageInfo.FindForPackageName(packageName) != null;
+                return UnityEditor.PackageManager.PackageInfo.FindForPackageName(packageName) != null;
             }
             catch
             {
@@ -91,7 +91,7 @@ namespace OwlPublishingKit
 
         private static void Install(bool promptBeforeOverwrite)
         {
-            var package = PackageInfo.FindForPackageName(PackageName);
+            var package = UnityEditor.PackageManager.PackageInfo.FindForPackageName(PackageName);
             if (package == null)
                 return;
 
