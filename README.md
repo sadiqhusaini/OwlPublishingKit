@@ -39,7 +39,7 @@ The editor creates an ad configuration asset in your project when you first open
 To add the package directly in `Packages/manifest.json`, add this entry to the `dependencies` object:
 
 ```json
-"com.leorusgames.owl-publishing-kit": "https://github.com/sadiqhusaini/OwlPublishingKit.git#main"
+"com.sadiqhusaini.owl-publishing-kit": "https://github.com/sadiqhusaini/OwlPublishingKit.git#main"
 ```
 
 For reproducible builds, replace `main` with a release tag or commit hash once you publish one. The package declares its required uGUI dependency. In-App Purchasing and all ad, analytics, attribution, Firebase, and Meta SDKs are optional; install the ones you enable from their publishers or the **Owl > SDKs** menu.
