@@ -1,6 +1,6 @@
 {
   "name": "com.sadiqhusaini.owl-publishing-kit",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "displayName": "Owl Publishing Kit",
   "description": "Unity toolkit for startup orchestration, ads, in-app purchases, Firebase, analytics, attribution, and push notifications.",
   "keywords": [
@@ -12,6 +12,7 @@
     "iap"
   ],
   "dependencies": {
-    "com.unity.ugui": "2.0.0"
+    "com.unity.ugui": "2.0.0",
+    "com.unity.purchasing": "5.5.0"
   }
 }

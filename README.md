@@ -17,7 +17,7 @@ The editor creates an ad configuration asset in your project when you first open
 
 - A Unity project. The source project is currently authored with Unity `6000.3.8f1`; other editor versions have not been validated in this repository.
 - Unity UI (uGUI) for Owl's settings and UI prefabs.
-- Unity In-App Purchasing if you enable Owl IAP.
+- Unity In-App Purchasing 5.5.0 (installed as a package dependency).
 - Provider SDKs for the integrations you turn on. They are optional and are not bundled here.
 
 ## Install through Unity Package Manager
@@ -42,7 +42,7 @@ To add the package directly in `Packages/manifest.json`, add this entry to the `
 "com.sadiqhusaini.owl-publishing-kit": "https://github.com/sadiqhusaini/OwlPublishingKit.git#main"
 ```
 
-For reproducible builds, replace `main` with a release tag or commit hash once you publish one. The package declares its required uGUI dependency. In-App Purchasing and all ad, analytics, attribution, Firebase, and Meta SDKs are optional; install the ones you enable from their publishers or the **Owl > SDKs** menu.
+For reproducible builds, replace `main` with a release tag or commit hash once you publish one. The package declares uGUI and In-App Purchasing dependencies and includes runtime/editor assembly definitions so Unity compiles scripts installed from `Packages`. Ad, analytics, attribution, Firebase, and Meta SDKs remain optional; install the ones you enable from their publishers or the **Owl > SDKs** menu.
 
 ### Complete setup
 
