@@ -18,6 +18,7 @@ namespace OwlPublishingKit
         static OwlPackageInstaller()
         {
             EditorApplication.delayCall += RemoveStaleProviderDefines;
+            EditorApplication.delayCall += RememberInstalledGuids;
             EditorApplication.delayCall += InstallIfMissing;
         }
 
@@ -134,7 +135,11 @@ namespace OwlPublishingKit
             Dictionary<string, string> guidRemaps;
             try
             {
+                if (destinationExists) RememberInstalledGuids();
                 guidRemaps = BuildGuidRemaps(source, destination, sourceMeta, destinationMeta);
+                var saved = LoadGuidSnapshot();
+                if (!File.Exists(destinationMeta) && saved.TryGetValue(".meta", out var rootMeta))
+                    EnsureGuidAvailable(ReadGuidFromText(rootMeta), "Assets/Owl");
             }
             catch (InvalidOperationException exception)
             {
@@ -143,10 +148,20 @@ namespace OwlPublishingKit
             }
             CopyDirectory(source, destination, overwrite: destinationExists, guidRemaps: guidRemaps);
 
-            if (File.Exists(sourceMeta) && !File.Exists(destinationMeta))
-                CopyFile(sourceMeta, destinationMeta, overwrite: false, guidRemaps);
+            if (!File.Exists(destinationMeta))
+            {
+                var saved = LoadGuidSnapshot();
+                if (saved.TryGetValue(".meta", out var rootMeta))
+                {
+                    EnsureGuidAvailable(ReadGuidFromText(rootMeta), "Assets/Owl");
+                    File.WriteAllText(destinationMeta, rootMeta);
+                }
+                else if (File.Exists(sourceMeta))
+                    CopyFile(sourceMeta, destinationMeta, overwrite: false, guidRemaps);
+            }
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+            RememberInstalledGuids();
             Debug.Log($"Owl Publishing Kit assets installed to Assets/{DestinationFolderName}.");
             var installedFolder = AssetDatabase.LoadAssetAtPath<DefaultAsset>($"Assets/{DestinationFolderName}");
             if (installedFolder != null)
@@ -163,6 +178,7 @@ namespace OwlPublishingKit
         {
             var remaps = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var assigned = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var saved = LoadGuidSnapshot();
             var metaPaths = new List<string>(Directory.GetFiles(source, "*.meta", SearchOption.AllDirectories));
             if (File.Exists(sourceMeta)) metaPaths.Add(sourceMeta);
 
@@ -173,11 +189,19 @@ namespace OwlPublishingKit
                 var targetMeta = metaPath == sourceMeta
                     ? destinationMeta
                     : Path.Combine(destination, metaPath.Substring(source.Length + 1));
-                var installedGuid = File.Exists(targetMeta) ? ReadMetaGuid(targetMeta) : null;
+                var snapshotKey = metaPath == sourceMeta ? ".meta" :
+                    metaPath.Substring(source.Length + 1).Replace('\\', '/');
+                var installedGuid = File.Exists(targetMeta) ? ReadMetaGuid(targetMeta) :
+                    saved.TryGetValue(snapshotKey, out var oldMeta) ? ReadGuidFromText(oldMeta) : null;
                 if (File.Exists(targetMeta) && installedGuid == null)
                     throw new InvalidOperationException($"Cannot read the GUID in {targetMeta}. No files were changed.");
 
                 var targetGuid = installedGuid ?? originalGuid;
+                if (installedGuid != null && !File.Exists(targetMeta))
+                {
+                    var relativeAsset = snapshotKey.Substring(0, snapshotKey.Length - ".meta".Length);
+                    EnsureGuidAvailable(installedGuid, "Assets/Owl/" + relativeAsset);
+                }
                 if (installedGuid == null && !string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(originalGuid)))
                     targetGuid = Guid.NewGuid().ToString("N");
 
@@ -193,8 +217,77 @@ namespace OwlPublishingKit
 
         private static string ReadMetaGuid(string path)
         {
-            var match = MetaGuidPattern.Match(File.ReadAllText(path));
+            return ReadGuidFromText(File.ReadAllText(path));
+        }
+
+        private static string ReadGuidFromText(string text)
+        {
+            var match = MetaGuidPattern.Match(text);
             return match.Success ? match.Groups[1].Value : null;
+        }
+
+        private static void EnsureGuidAvailable(string guid, string expectedPath)
+        {
+            if (string.IsNullOrEmpty(guid))
+                throw new InvalidOperationException("A saved Owl GUID is invalid. Restore the original .meta files from backup.");
+            var path = AssetDatabase.GUIDToAssetPath(guid);
+            if (!string.IsNullOrEmpty(path) && !string.Equals(path, expectedPath, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"Saved GUID {guid} is now used by {path}. Restore the original .meta files or resolve the conflict before reinstalling.");
+        }
+
+        [Serializable]
+        private sealed class GuidSnapshot
+        {
+            public List<GuidSnapshotEntry> entries = new List<GuidSnapshotEntry>();
+        }
+
+        [Serializable]
+        private sealed class GuidSnapshotEntry
+        {
+            public string path;
+            public string meta;
+        }
+
+        private static string SnapshotPath => Path.Combine(Directory.GetParent(Application.dataPath).FullName,
+            "ProjectSettings", "OwlInstalledAssetGuids.json");
+
+        private static Dictionary<string, string> LoadGuidSnapshot()
+        {
+            var result = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (!File.Exists(SnapshotPath)) return result;
+            var snapshot = JsonUtility.FromJson<GuidSnapshot>(File.ReadAllText(SnapshotPath));
+            if (snapshot?.entries == null) throw new InvalidOperationException("The saved Owl GUID snapshot is invalid.");
+            foreach (var entry in snapshot.entries)
+                if (entry != null && !string.IsNullOrEmpty(entry.path) && entry.meta != null)
+                    result[entry.path] = entry.meta;
+            return result;
+        }
+
+        internal static void RememberInstalledGuids()
+        {
+            var destination = Path.Combine(Application.dataPath, DestinationFolderName);
+            if (!Directory.Exists(destination)) return;
+            try
+            {
+                var saved = LoadGuidSnapshot();
+                foreach (var meta in Directory.GetFiles(destination, "*.meta", SearchOption.AllDirectories))
+                {
+                    var text = File.ReadAllText(meta);
+                    if (ReadGuidFromText(text) != null)
+                        saved[meta.Substring(destination.Length + 1).Replace('\\', '/')] = text;
+                }
+                if (File.Exists(destination + ".meta"))
+                    saved[".meta"] = File.ReadAllText(destination + ".meta");
+                var snapshot = new GuidSnapshot();
+                foreach (var entry in saved)
+                    snapshot.entries.Add(new GuidSnapshotEntry { path = entry.Key, meta = entry.Value });
+                Directory.CreateDirectory(Path.GetDirectoryName(SnapshotPath));
+                File.WriteAllText(SnapshotPath, JsonUtility.ToJson(snapshot, true));
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("Owl could not save its installed asset GUIDs: " + exception.Message);
+            }
         }
 
         private static void CopyDirectory(string source, string destination, bool overwrite, Dictionary<string, string> guidRemaps)
@@ -242,4 +335,14 @@ namespace OwlPublishingKit
                    extension == ".asmref";
         }
     }
+    internal sealed class OwlAssetDeletionWatcher : AssetModificationProcessor
+    {
+        private static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions options)
+        {
+            if (assetPath == "Assets/Owl")
+                OwlPackageInstaller.RememberInstalledGuids();
+            return AssetDeleteResult.DidNotDelete;
+        }
+    }
+
 }

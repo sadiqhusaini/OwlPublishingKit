@@ -34,7 +34,7 @@ The editor creates an ad configuration asset in your project when you first open
 
 4. Click **Add**. The package installs its assets into `Assets/Owl` automatically and selects that folder in the Project window. Use **Owl > Show Installed Assets** any time to locate it again.
 
-If `Assets/Owl` already exists, automatic installation leaves it untouched. Use **Owl > Install or Update Assets** to update it; Unity asks before overwriting the folder's package files. Updates preserve existing `.meta` files and their GUIDs so scene and prefab references continue to point to the installed assets. Back up project changes before updating.
+If `Assets/Owl` already exists, automatic installation leaves it untouched. Use **Owl > Install or Update Assets** to update it; Unity asks before overwriting the folder's package files. Updates preserve existing `.meta` files and their GUIDs so scene and prefab references continue to point to the installed assets. The installer records installed GUIDs in `ProjectSettings/OwlInstalledAssetGuids.json` so reinstalling after deleting `Assets/Owl` can restore references to package assets. Keep this file with the project. It must be recorded before deletion, and it does not back up customized or user-created assets. Back up project changes before updating or deleting Owl.
 
 ### Project manifest
 
