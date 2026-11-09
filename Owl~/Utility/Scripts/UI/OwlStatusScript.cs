@@ -6,11 +6,12 @@ using Owl.Monetization;
 using Owl.Notifications;
 using Owl.Utility;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class OwlStatusScript : MonoBehaviour
 {
-    [SerializeField] private Text _statusText;
+    [FormerlySerializedAs("_statusText")] [SerializeField] private Text statusText;
 
     private const float RefreshInterval = 0.5f;
     private const int MaxRecentEvents = 16;
@@ -21,6 +22,7 @@ public class OwlStatusScript : MonoBehaviour
     private RectTransform _viewport;
     private Text _fontSizeLabel;
     private Scrollbar _verticalScrollbar;
+    private GameObject _openButton;
     private float _nextRefresh;
     private string _lastRendered;
 
@@ -64,14 +66,16 @@ public class OwlStatusScript : MonoBehaviour
     public void ShowStatusInfo()
     {
         if (_panelBackground) _panelBackground.gameObject.SetActive(true);
-        _statusText?.gameObject.SetActive(true);
+        if (_openButton) _openButton.SetActive(false);
+        statusText?.gameObject.SetActive(true);
         RefreshDebugText(true);
     }
 
     public void HideStatusInfo()
     {
         if (_panelBackground) _panelBackground.gameObject.SetActive(false);
-        _statusText?.gameObject.SetActive(false);
+        statusText?.gameObject.SetActive(false);
+        if (_openButton) _openButton.SetActive(true);
     }
 
     public void UpdateStatusInfo(string statusInfo)
@@ -128,7 +132,7 @@ public class OwlStatusScript : MonoBehaviour
 
         var scroll = backgroundObject.GetComponent<ScrollRect>();
         scroll.viewport = _viewport;
-        scroll.content = _statusText ? _statusText.rectTransform : null;
+        scroll.content = statusText ? statusText.rectTransform : null;
         scroll.horizontal = false;
         scroll.vertical = true;
         scroll.movementType = ScrollRect.MovementType.Clamped;
@@ -140,13 +144,38 @@ public class OwlStatusScript : MonoBehaviour
         scroll.verticalScrollbarSpacing = -3;
 
         CreateFontSizeControl(backgroundObject.transform);
+        _openButton = CreatePanelButton("OpenDebugPanel", transform, "Open OWL debug", ShowStatusInfo);
+        var openRect = _openButton.GetComponent<RectTransform>();
+        openRect.anchorMin = openRect.anchorMax = new Vector2(0, 1);
+        openRect.pivot = new Vector2(0, 1);
+        openRect.anchoredPosition = new Vector2(12, -12);
+        openRect.sizeDelta = new Vector2(160, 36);
+        _openButton.SetActive(false);
+    }
+
+    private GameObject CreatePanelButton(string name, Transform parent, string label, UnityEngine.Events.UnityAction action)
+    {
+        var buttonObject = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+        buttonObject.transform.SetParent(parent, false);
+        var image = buttonObject.GetComponent<Image>();
+        image.color = new Color(0.08f, 0.35f, 0.38f, 1f);
+        var button = buttonObject.GetComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(action);
+        var text = CreateControlText("Label", buttonObject.transform, label, 14);
+        text.alignment = TextAnchor.MiddleCenter;
+        text.rectTransform.anchorMin = Vector2.zero;
+        text.rectTransform.anchorMax = Vector2.one;
+        text.rectTransform.offsetMin = Vector2.zero;
+        text.rectTransform.offsetMax = Vector2.zero;
+        return buttonObject;
     }
 
     private void ConfigureText()
     {
-        if (!_statusText) return;
+        if (!statusText) return;
 
-        var rect = _statusText.rectTransform;
+        var rect = statusText.rectTransform;
         rect.SetParent(_viewport, false);
         rect.anchorMin = new Vector2(0, 1);
         rect.anchorMax = new Vector2(1, 1);
@@ -154,15 +183,15 @@ public class OwlStatusScript : MonoBehaviour
         rect.anchoredPosition = Vector2.zero;
         rect.sizeDelta = new Vector2(0, 1200);
 
-        _statusText.alignment = TextAnchor.UpperLeft;
-        _statusText.fontSize = DefaultFontSize;
-        _statusText.resizeTextForBestFit = false;
-        _statusText.horizontalOverflow = HorizontalWrapMode.Wrap;
-        _statusText.verticalOverflow = VerticalWrapMode.Overflow;
-        _statusText.lineSpacing = 1.15f;
-        _statusText.color = Color.white;
-        _statusText.raycastTarget = false;
-        _statusText.supportRichText = true;
+        statusText.alignment = TextAnchor.UpperLeft;
+        statusText.fontSize = DefaultFontSize;
+        statusText.resizeTextForBestFit = false;
+        statusText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        statusText.verticalOverflow = VerticalWrapMode.Overflow;
+        statusText.lineSpacing = 1.15f;
+        statusText.color = Color.white;
+        statusText.raycastTarget = false;
+        statusText.supportRichText = true;
     }
 
     private void CreateFontSizeControl(Transform parent)
@@ -194,7 +223,14 @@ public class OwlStatusScript : MonoBehaviour
         sliderRect.anchorMax = new Vector2(1, 0.5f);
         sliderRect.pivot = new Vector2(0.5f, 0.5f);
         sliderRect.offsetMin = new Vector2(128, -10);
-        sliderRect.offsetMax = new Vector2(-14, 10);
+        sliderRect.offsetMax = new Vector2(-100, 10);
+
+        var closeButton = CreatePanelButton("CloseDebugPanel", barObject.transform, "Close", HideStatusInfo);
+        var closeRect = closeButton.GetComponent<RectTransform>();
+        closeRect.anchorMin = closeRect.anchorMax = new Vector2(1, 0.5f);
+        closeRect.pivot = new Vector2(1, 0.5f);
+        closeRect.anchoredPosition = new Vector2(-6, 0);
+        closeRect.sizeDelta = new Vector2(76, 30);
 
         var track = CreateControlImage("Track", sliderObject.transform,
             new Color(0.28f, 0.36f, 0.4f, 1f));
@@ -269,7 +305,7 @@ public class OwlStatusScript : MonoBehaviour
         var textObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
         textObject.transform.SetParent(parent, false);
         var text = textObject.GetComponent<Text>();
-        text.font = _statusText ? _statusText.font : Resources.GetBuiltinResource<Font>("Arial.ttf");
+        text.font = statusText ? statusText.font : Resources.GetBuiltinResource<Font>("Arial.ttf");
         text.fontSize = size;
         text.color = Color.white;
         text.alignment = TextAnchor.MiddleLeft;
@@ -290,7 +326,7 @@ public class OwlStatusScript : MonoBehaviour
 
     private void OnFontSizeChanged(float value)
     {
-        if (_statusText) _statusText.fontSize = Mathf.RoundToInt(value);
+        if (statusText) statusText.fontSize = Mathf.RoundToInt(value);
         if (_fontSizeLabel) _fontSizeLabel.text = $"Text size: {Mathf.RoundToInt(value)}";
         _lastRendered = null;
         RefreshDebugText(true);
@@ -298,14 +334,14 @@ public class OwlStatusScript : MonoBehaviour
 
     private void RefreshDebugText(bool force)
     {
-        if (!_statusText) return;
+        if (!statusText) return;
         var report = BuildReport();
         if (!force && report == _lastRendered) return;
         _lastRendered = report;
-        _statusText.text = report;
-        var textRect = _statusText.rectTransform;
+        statusText.text = report;
+        var textRect = statusText.rectTransform;
         textRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-            Mathf.Max(_viewport.rect.height, _statusText.preferredHeight + 12));
+            Mathf.Max(_viewport.rect.height, statusText.preferredHeight + 12));
     }
 
     private string BuildReport()
@@ -457,9 +493,6 @@ public class OwlStatusScript : MonoBehaviour
             AppendSetting(builder, "Reset interval after reward", settings.resetIntervalOnRewarded);
         }
 
-        AppendSection(builder, "LIVE COMPONENTS  (active / load)");
-        AppendComponents(builder);
-
         AppendSection(builder, "RECENT EVENTS");
         if (RecentEvents.Count == 0) builder.AppendLine("  Waiting for startup events");
         else
@@ -609,30 +642,6 @@ public class OwlStatusScript : MonoBehaviour
             state.IndexOf("manual", System.StringComparison.OrdinalIgnoreCase) >= 0)
             return "#B8C4CC";
         return "#FFD166";
-    }
-
-    private static void AppendComponents(StringBuilder builder)
-    {
-        var components = OwlManager.GetDebugComponents();
-        if (components == null || components.Length == 0)
-        {
-            builder.AppendLine("  No Owl runtime components found");
-            return;
-        }
-
-        var shown = 0;
-        foreach (var component in components)
-        {
-            if (!component) continue;
-
-            var active = component.isActiveAndEnabled;
-            var state = active ? "Active" : "Inactive";
-            var detail = component is AdType adType
-                ? (adType.IsAdLoaded ? "loaded" : "not loaded")
-                : component.gameObject.name;
-            AppendRow(builder, component.GetType().Name, state, detail);
-            shown++;
-        }
     }
 
     private static string Escape(string value)

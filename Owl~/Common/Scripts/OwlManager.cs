@@ -124,7 +124,7 @@ namespace Owl
                 ApplyRemoveAdsEntitlement(product.definition.id);
         }
 
-        private static void ApplyRemoveAdsEntitlement(string productId)
+        internal static void ApplyRemoveAdsEntitlement(string productId)
         {
             var removeAdsIds = OwlSettings?.noAdsIds;
             if (removeAdsIds == null || string.IsNullOrEmpty(productId))

@@ -108,6 +108,7 @@ namespace Owl.Monetization
         public void ShowAd(string placement)
         {
             AdManager.OnAdOpen();
+            AdStarting();
 #if USE_ADMOB
             _googleAdsRewardedInterstitialController.ShowAd(placement, () => { ReportAdLoad("Rewarded Interstitial", false);},()=>{ AdOpened(false,true); },()=>{ AdClosed(false,true);});
 #elif USE_MAXADS

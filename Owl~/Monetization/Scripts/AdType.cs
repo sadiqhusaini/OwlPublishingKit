@@ -33,21 +33,36 @@ namespace Owl.Monetization
             
         }
 
-#if UNITY_IOS
+#if UNITY_IOS || UNITY_EDITOR
         private static bool _presentationPaused;
+        private static bool _presentationStateCaptured;
         private static float _previousTimeScale;
         private static float _previousVolume;
 #endif
 
+        protected static void AdStarting()
+        {
+#if UNITY_IOS || UNITY_EDITOR
+            // The Google Mobile Ads Editor mock pauses Unity before it raises the
+            // fullscreen-opened event, so capture the gameplay state before Show().
+            if (_presentationPaused) return;
+
+            _previousTimeScale = Time.timeScale;
+            _previousVolume = AudioListener.volume;
+            _presentationStateCaptured = true;
+#endif
+        }
+
         protected static void AdOpened(bool isInter,bool isRv)
         {
-#if UNITY_IOS
-            if (!_presentationPaused)
+#if UNITY_IOS || UNITY_EDITOR
+            if (!_presentationStateCaptured)
             {
                 _previousTimeScale = Time.timeScale;
                 _previousVolume = AudioListener.volume;
-                _presentationPaused = true;
             }
+            _presentationStateCaptured = false;
+            _presentationPaused = true;
             Time.timeScale = 0;
             AudioListener.volume = 0; 
 #endif
@@ -56,12 +71,13 @@ namespace Owl.Monetization
 
         protected static void AdClosed(bool isInter,bool isRv)
         {
-#if UNITY_IOS
-            if (_presentationPaused)
+#if UNITY_IOS || UNITY_EDITOR
+            if (_presentationPaused || _presentationStateCaptured)
             {
                 Time.timeScale = _previousTimeScale;
                 AudioListener.volume = _previousVolume;
                 _presentationPaused = false;
+                _presentationStateCaptured = false;
             }
 #endif
           
@@ -94,8 +110,8 @@ namespace Owl.Monetization
             if (OwlManager.OwlSettings.testIds)
                 return;
 
-            adIdAndroid = android?.Trim() ?? "";
-            adIdIOS = ios?.Trim() ?? "";
+            adIdAndroid = string.IsNullOrWhiteSpace(android) ? "" : android.Trim();
+            adIdIOS = string.IsNullOrWhiteSpace(ios) ? "" : ios.Trim();
         }
     }
 }

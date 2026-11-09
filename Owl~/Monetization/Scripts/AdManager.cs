@@ -147,7 +147,7 @@ namespace Owl.Monetization
 
         private void OnAppOpenInitializedResult()
         {
-            if(_startAppOpenCall || _firstAppOpenScheduled)
+            if (_startAppOpenCall || _firstAppOpenScheduled || !IsAppOpenAvailable())
                 return;
             _firstAppOpenScheduled = true;
 
@@ -304,7 +304,7 @@ namespace Owl.Monetization
             yield return new WaitForSecondsRealtime(0.1f);
             InitializeInterstitialTimer();
             OwlStatusScript.SetFlowStatus("Timer Ads", IsTimerAdAvailable ?
-                (_interstitialTimerInitialized ? "Ready" : "Waiting") : "Disabled",
+                    (_interstitialTimerInitialized ? "Ready" : "Waiting") : "Disabled",
                 IsTimerAdAvailable ? "requires interstitial setup" : "disabled by settings or remote config");
             _initialized = true;
             _initializing = false;
@@ -799,7 +799,7 @@ namespace Owl.Monetization
         {
             ShowInterstitial("DirectInterstitial", () => { });
         }
-        public static void ShowInterstitial(string placement, Action onComplete)
+        public static void ShowInterstitial(string placement, Action onComplete=null)
         {
             if (!IsInterstitialEnabled)
             {
@@ -814,28 +814,7 @@ namespace Owl.Monetization
             }
             _interstitialClosed = onComplete ?? (() => { });
 
-            if (!Utility.InternetManager.IsInternetAvailable)
-            {
-                InterstitialClosed("NotAvailable Interstitial: "+placement);
-                return;
-            }
-
-            if (!IsAdManager)
-            {
-                InterstitialClosed("NotAvailable Interstitial: "+placement);
-                return;
-            }
-
-
-
-
-            if (IsRemoveAdsPurchased())
-            {
-                InterstitialClosed("NotAvailable Interstitial: "+placement);
-                return;
-            }
-
-            if (_adBreak)
+            if (!Utility.InternetManager.IsInternetAvailable || !IsAdManager || IsRemoveAdsPurchased() || _adBreak)
             {
                 InterstitialClosed("NotAvailable Interstitial: "+placement);
                 return;
@@ -871,13 +850,14 @@ namespace Owl.Monetization
         {
             ShowRewardedInterstitial("DirectRewardedInterstitial", b => { });
         }
-        public static void ShowRewardedInterstitial(string placement, Action<bool> rewardedAction)
+        public static void ShowRewardedInterstitial(string placement, Action<bool> rewardedAction=null)
         {
             if (!IsRewardedInterstitialEnabled)
             {
                 rewardedAction?.Invoke(false);
                 return;
             }
+
 
             if (_appOpenPending || _rewardResults != null || _interstitialClosed != null)
             {
@@ -886,13 +866,7 @@ namespace Owl.Monetization
             }
             _rewardResults = rewardedAction ?? (_ => { });
 
-            if (!IsAdManager)
-            {
-                RewardGiven(false,placement);
-                return;
-            }
-
-            if (!Utility.InternetManager.IsInternetAvailable)
+            if (!IsAdManager || !Utility.InternetManager.IsInternetAvailable)
             {
                 RewardGiven(false,placement);
                 return;
@@ -919,7 +893,7 @@ namespace Owl.Monetization
         {
             ShowRewardedVideo("DirectRewardedAd", b => { });
         }
-        public static void ShowRewardedVideo(string placement, Action<bool> rewardedAction)
+        public static void ShowRewardedVideo(string placement, Action<bool> rewardedAction=null)
         {
             if (!IsRewardedEnabled)
             {
@@ -934,13 +908,7 @@ namespace Owl.Monetization
             }
             _rewardResults = rewardedAction ?? (_ => { });
 
-            if (!IsAdManager)
-            {
-                RewardGiven(false,placement);
-                return;
-            }
-
-            if (!Utility.InternetManager.IsInternetAvailable)
+            if (!IsAdManager || !Utility.InternetManager.IsInternetAvailable)
             {
                 RewardGiven(false,placement);
                 return;

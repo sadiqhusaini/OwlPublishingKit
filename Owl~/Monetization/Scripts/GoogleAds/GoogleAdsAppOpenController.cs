@@ -41,10 +41,10 @@ namespace Owl.Monetization
                         GoogleMobileAds.Api.AppOpenAd.Load(adUnitId, request, (ad, error) =>
                         {
                             complete();
-                            if (!IsCurrentLoad(generation)) { ad?.Destroy(); return; }
+                            if (!IsCurrentLoad(generation)) { DestroyAppOpenAd(ad); return; }
                             if (error != null || ad == null)
                             {
-                                ad?.Destroy();
+                                DestroyAppOpenAd(ad);
                                 GooglesAdsController.LogWarning($"AppOpen({adFloor}): Load failed: {error?.ToString() ?? "SDK returned no ad"}");
                                 InvokeSafely(loadAgain);
                                 OwlManager.AppOpenResult(false);
@@ -75,19 +75,26 @@ namespace Owl.Monetization
 
         protected override void DestroyAd()
         {
-            _appOpenAd?.Destroy();
+            DestroyAppOpenAd(_appOpenAd);
             _appOpenAd = null;
+        }
+
+        private static void DestroyAppOpenAd(GoogleMobileAds.Api.AppOpenAd ad)
+        {
+            if (ad == null) return;
+            if (CanDestroySimulatedAd()) ad.Destroy();
         }
 
         public void ShowAd(string placement,Action onComplete,Action adCompletion,Action adOpened,Action adClosed)
         {
-            if (_appOpenAd == null || !_appOpenAd.CanShowAd() || !BeginPresentation()) return;
+            if (_appOpenAd == null || !_appOpenAd.CanShowAd() || !BeginPresentation()) { InvokeSafely(adCompletion); InvokeSafely(adClosed); return; }
             this._placement = placement;
             this._completeAction = onComplete;
             this._adCompletionAction = adCompletion;
             this._adOpened = adOpened;
             this._adClosed = adClosed;
-            _appOpenAd?.Show();
+            try { _appOpenAd?.Show(); }
+            catch (Exception exception) { EndPresentation(); GooglesAdsController.LogWarning("Ad show failed: " + exception.Message); InvokeSafely(adCompletion); InvokeSafely(adClosed); }
         }
 
 
@@ -134,7 +141,6 @@ namespace Owl.Monetization
 
                     InvokeSafely(_adCompletionAction);
                     InvokeSafely(_adClosed);
-
                     InvokeSafely(_completeAction);
                     _completeAction = null;
                     _adClosed = null;

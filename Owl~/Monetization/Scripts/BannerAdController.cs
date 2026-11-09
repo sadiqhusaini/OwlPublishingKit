@@ -144,6 +144,8 @@ namespace Owl.Monetization
 #endif
         }
         
+        private void OnDestroy() => DestroyAd();
+
         private void DestroyAd()
         {
             ReportAdLoad("Banner", false);

@@ -173,6 +173,7 @@ namespace Owl.Monetization
                 return;
 
             AdManager.OnAdOpen();
+            AdStarting();
 
 #if USE_ADMOB
             _googleAdsAppOpenController.ShowAd(placement,() => { }, () =>

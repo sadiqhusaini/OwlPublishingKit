@@ -41,6 +41,11 @@ namespace Owl.Monetization
 
         public static IAPProcessPurchaseCallBack OnIAPProcessPurchase;
 
+        /// <summary>Register a persistent game service that grants every item in an order.
+        /// Return true only after durable, transaction-idempotent fulfillment. Orders remain
+        /// pending if no handler acknowledges them. The handler must tolerate store retries.</summary>
+        public static Func<PendingOrder, bool> FulfillPurchase;
+
         public delegate void IAPPurchaseFailedCallBack(FailedOrder failedOrder);
 
         public static IAPPurchaseFailedCallBack OnIAPPurchaseFailed;
@@ -70,6 +75,7 @@ namespace Owl.Monetization
             OnIAPInitialized = null;
 #if USE_IAP
             OnIAPProcessPurchase = null;
+            FulfillPurchase = null;
             OnIAPPurchaseFailed = null;
             OnIAPRestoreSuccessFul = null;
             OnIAPRestoreFailed = null;
@@ -117,9 +123,8 @@ namespace Owl.Monetization
             var loadingPrefab = settings != null && settings.showIapLoadingUi
                 ? settings.OwlComponents?.IapLoadingCanvas
                 : null;
-            _iapLoadingCanvas = loadingPrefab != null
-                ? Instantiate(loadingPrefab, parent)
-                : null;
+            if (_iapLoadingCanvas == null && loadingPrefab != null)
+                _iapLoadingCanvas = Instantiate(loadingPrefab, parent);
 
             StoreDiagnosticState = "Connecting";
             StoreDiagnosticError = null;
@@ -136,7 +141,7 @@ namespace Owl.Monetization
 #if USE_IAP
         public async void InitializePurchasing()
         {
-            if (_storeController != null || _isInitializing)
+            if (_isInitializing || IsInitialized)
             {
                 CustomDebug.Log("IAP Already Initialized");
                 return;
@@ -151,7 +156,9 @@ namespace Owl.Monetization
             try
             {
                 await UnityServices.InitializeAsync();
+                if (!this || Instance != this) return;
 
+                DetachStoreCallbacks();
                 _storeController = UnityIAPServices.StoreController();
 
                 _storeController.OnStoreDisconnected += OnStoreDisconnected;
@@ -172,6 +179,7 @@ namespace Owl.Monetization
             }
             catch (Exception e)
             {
+                if (!this || Instance != this) return;
                 _isInitializing = false;
                 IsInitialized = false;
                 StoreDiagnosticState = "Initialization failed";
@@ -183,6 +191,30 @@ namespace Owl.Monetization
 
                 OnIAPInitialized?.Invoke(false);
             }
+        }
+
+        private void DetachStoreCallbacks()
+        {
+            if (_storeController == null) return;
+            _storeController.OnStoreDisconnected -= OnStoreDisconnected;
+            _storeController.OnStoreConnected -= OnStoreConnected;
+            _storeController.OnProductsFetched -= OnProductsFetched;
+            _storeController.OnProductsFetchFailed -= OnProductsFetchFailed;
+            _storeController.OnPurchasesFetched -= OnPurchasesFetched;
+            _storeController.OnPurchasesFetchFailed -= OnPurchasesFetchFailed;
+            _storeController.OnPurchasePending -= OnPurchasePending;
+            _storeController.OnPurchaseFailed -= OnPurchaseFailed;
+            _storeController.OnPurchaseDeferred -= OnPurchaseDeferred;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance != this) return;
+            DetachStoreCallbacks();
+            _storeController = null;
+            Instance = null;
+            IsInitialized = false;
+            FinishPurchaseUI();
         }
 
         private void OnStoreConnected()
@@ -376,22 +408,42 @@ namespace Owl.Monetization
                 $"Transaction: {transactionId}"
             );
 
-            // Fulfill the purchase.
+            // Never acknowledge an order just because a UI or analytics listener exists.
+            // The game's durable fulfillment service owns idempotency by transaction ID.
             try
             {
-                OnIAPProcessPurchase?.Invoke(order);
+                var removeAdsIds = OwlManager.OwlSettings?.noAdsIds;
+                bool builtInRemoveAds = removeAdsIds != null;
+                foreach (var item in items)
+                {
+                    var id = item?.Product?.definition?.id;
+                    if (string.IsNullOrEmpty(id) || Array.IndexOf(removeAdsIds ?? Array.Empty<string>(), id) < 0)
+                    {
+                        builtInRemoveAds = false;
+                        break;
+                    }
+                }
+                if (builtInRemoveAds)
+                {
+                    foreach (var item in items) OwlManager.ApplyRemoveAdsEntitlement(item.Product.definition.id);
+                }
+                else if (FulfillPurchase == null || !FulfillPurchase(order))
+                {
+                    Debug.LogWarning("IAP purchase remains pending: no fulfillment service acknowledged it.");
+                    FinishPurchaseUI();
+                    return;
+                }
             }
             catch (Exception e)
             {
-                Debug.LogError(
-                    $"IAP Purchase Fulfillment Exception: {e}"
-                );
-
-                // DO NOT confirm.
-                // Unity IAP will deliver the pending purchase again.
+                Debug.LogError($"IAP Purchase Fulfillment Exception: {e}");
                 FinishPurchaseUI();
                 return;
             }
+
+            // Observers update UI and analytics; they do not decide store acknowledgement.
+            try { OnIAPProcessPurchase?.Invoke(order); }
+            catch (Exception e) { Debug.LogError($"IAP purchase observer failed: {e}"); }
 
             // Confirm ONLY after fulfillment succeeds.
             try

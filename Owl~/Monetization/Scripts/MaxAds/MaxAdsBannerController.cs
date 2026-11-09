@@ -32,8 +32,14 @@ namespace Owl.Monetization
         public void DestroyAd()
         {
 
-            MaxSdk.DestroyBanner(_adUnitId);
+            UnsubscribeMaxCallBacks();
+            var previousId = _adUnitId;
+            _adUnitId = null;
+            _onLoaded = _loadAgain = null;
+            if (!string.IsNullOrEmpty(previousId)) MaxSdk.DestroyBanner(previousId);
         }
+
+        private void OnDestroy() => DestroyAd();
         
         public void ShowAd()
         {

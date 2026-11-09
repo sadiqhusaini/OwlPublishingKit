@@ -194,6 +194,7 @@ namespace Owl.Monetization
         {
             ReportAdLoad("Interstitial", false);
             AdManager.OnAdOpen();
+            AdStarting();
 #if USE_ADMOB
             _googleAdsInterstitialController.ShowAd(placement,() => { ReportAdUnloaded("Interstitial");},()=>{ AdOpened(true,false); },()=>{ AdClosed(true,false);});
 #elif USE_MAXADS

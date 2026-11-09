@@ -134,6 +134,7 @@ namespace Owl.Monetization
         {
             ReportAdLoad("Rewarded", false);
             AdManager.OnAdOpen();
+            AdStarting();
 
 #if USE_ADMOB
             _googleAdsRewardedController.ShowAd(placement,()=>{ AdOpened(false,true); }, () =>

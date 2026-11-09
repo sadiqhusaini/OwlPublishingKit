@@ -20,6 +20,7 @@ namespace Owl
         private bool sdkReady;
         private bool sdkInitialized;
         private bool appOpenResolved;
+        private bool waitingForAppOpenClose;
         private bool started;
 
         private void Start()
@@ -31,7 +32,8 @@ namespace Owl
             loadSceneCo = StartCoroutine(LoadScene());
             started = true;
             sdkInitialized |= OwlManager.OwlInitialized;
-            appOpenResolved |= OwlManager.AppOpenInitializationResolved;
+            if (OwlManager.AppOpenInitializationResolved)
+                OnAppOpenInitialized();
             TryContinue();
         }
 
@@ -39,8 +41,11 @@ namespace Owl
         {
             OwlManager.OnSDKInitialized += OnSDKInitialized;
             OwlManager.OnAppOpenInitializedResult += OnAppOpenInitialized;
+            Monetization.AdManager.OnAdOpenedEvent += OnAdOpened;
+            Monetization.AdManager.OnAdClosedEvent += OnAdClosed;
             sdkInitialized |= OwlManager.OwlInitialized;
-            appOpenResolved |= OwlManager.AppOpenInitializationResolved;
+            if (OwlManager.AppOpenInitializationResolved)
+                OnAppOpenInitialized();
             TryContinue();
         }
 
@@ -48,6 +53,8 @@ namespace Owl
         {
             OwlManager.OnSDKInitialized -= OnSDKInitialized;
             OwlManager.OnAppOpenInitializedResult -= OnAppOpenInitialized;
+            Monetization.AdManager.OnAdOpenedEvent -= OnAdOpened;
+            Monetization.AdManager.OnAdClosedEvent -= OnAdClosed;
             if (appOpenWaitCo != null)
             {
                 StopCoroutine(appOpenWaitCo);
@@ -63,8 +70,46 @@ namespace Owl
 
         private void OnAppOpenInitialized()
         {
+            // Loading an App Open placement only means it is ready to show. Keep
+            // the splash gate closed until its presentation has completed.
+            if (!appOpenResolved && !waitingForAppOpenClose && ShouldWaitForAppOpen() &&
+                Monetization.AdManager.IsAppOpenAvailable())
+            {
+                RestartAppOpenWait();
+            }
+
+            TryContinue();
+        }
+
+        private void OnAdOpened()
+        {
+            if (!waitForAppOpen) return;
+
+            waitingForAppOpenClose = true;
+            StopAppOpenWait();
+        }
+
+        private void OnAdClosed()
+        {
+            if (!waitingForAppOpenClose) return;
+
+            waitingForAppOpenClose = false;
             appOpenResolved = true;
             TryContinue();
+        }
+
+        private void RestartAppOpenWait()
+        {
+            if (waitingForAppOpenClose || appOpenWaitTimeout <= 0f) return;
+            StopAppOpenWait();
+            appOpenWaitCo = StartCoroutine(WaitForAppOpen());
+        }
+
+        private void StopAppOpenWait()
+        {
+            if (appOpenWaitCo == null) return;
+            StopCoroutine(appOpenWaitCo);
+            appOpenWaitCo = null;
         }
 
         private bool ShouldWaitForAppOpen()
@@ -82,7 +127,7 @@ namespace Owl
 
         private void TryContinue()
         {
-            if (!started || !sdkInitialized || sdkReady) return;
+            if (!started || !sdkInitialized || sdkReady || waitingForAppOpenClose) return;
             if (ShouldWaitForAppOpen() && !appOpenResolved && appOpenWaitTimeout > 0f)
             {
                 appOpenWaitCo ??= StartCoroutine(WaitForAppOpen());
@@ -93,15 +138,20 @@ namespace Owl
 
         private IEnumerator WaitForAppOpen()
         {
-            yield return new WaitForSecondsRealtime(appOpenWaitTimeout);
+            var settings = OwlManager.OwlSettings;
+            var startupDelay = settings != null ? settings.appOpenStartDelay +
+                (settings.showAdComingUi ? 3f * settings.adComingWaitStep : 0f) : 0f;
+            yield return new WaitForSecondsRealtime(appOpenWaitTimeout + startupDelay);
             appOpenWaitCo = null;
+            if (waitingForAppOpenClose) yield break;
+            appOpenResolved = true;
             CustomDebug.LogWarning("Splash app-open wait timed out; continuing to the game.");
             FinishLoading();
         }
 
         private void FinishLoading()
         {
-            if (sdkReady) return;
+            if (sdkReady || waitingForAppOpenClose) return;
             sdkReady = true;
             if (appOpenWaitCo != null)
             {
@@ -171,6 +221,9 @@ namespace Owl
                 yield return null;
             }
 
+            // An ad can start after startup resolves, including during the final
+            // progress animation. Recheck immediately before activating the scene.
+            while (!sdkReady || waitingForAppOpenClose) yield return null;
             asyncLoad.allowSceneActivation = true;
         }
 

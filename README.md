@@ -191,6 +191,8 @@ Other available helpers include `ShowBanner()`, `HideBanner()`, `ShowMREC(Banner
 
 Owl checks ownership before starting ads. If ownership cannot be confirmed during startup, ads are skipped for that session. A matching Remove Ads purchase suppresses ads.
 
+For products other than Remove Ads, register a persistent `IAPManager.FulfillPurchase` handler before initializing Owl. The handler must grant every item idempotently using the transaction ID, persist the grant, and return `true` only after fulfillment succeeds. Keep it registered when the store UI is closed; without an acknowledging handler, orders remain pending. Owl handles configured Remove Ads products automatically.
+
 ## Analytics event helpers
 
 Owl's `AnalyticsManager` sends supported events to the analytics providers selected in Owl Settings, after consent and initialization. Examples:

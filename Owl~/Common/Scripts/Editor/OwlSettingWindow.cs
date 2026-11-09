@@ -882,7 +882,9 @@ namespace Owl.Common
         {
             using (BeginPlacementList())
             {
-                _owlSettings.useBanner = DrawPlacementToggle("Banner ads", "Persistent ads at the edge of the screen", _owlSettings.useBanner);
+                _owlSettings.useBanner = DrawManagedAdPlacement("Banner ads",
+                    "Persistent ads at the edge of the screen", _owlSettings.useBanner,
+                    ref _owlSettings.bannerOnStart);
                 if (_owlSettings.useBanner)
                 {
                     _showBannerOptions = DrawOptionsDisclosure("More settings", _showBannerOptions);
@@ -894,8 +896,6 @@ namespace Owl.Common
                         _owlSettings.bannerPosition = (BannerPosition)EditorGUI.EnumPopup(
                             new Rect(row.x + 116, row.y + 2, Mathf.Max(80, row.width - 116), 20),
                             _owlSettings.bannerPosition);
-                        _owlSettings.bannerOnStart = DrawSettingCheckbox("Show on startup",
-                            "Show the banner as soon as the SDK initializes.", _owlSettings.bannerOnStart);
                         EndPlacementOptions();
                     }
                 }

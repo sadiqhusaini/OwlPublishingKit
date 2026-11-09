@@ -73,17 +73,26 @@ namespace Owl.Monetization
 
         public void ShowAd(string placement,Action adCompleted, Action adOpened, Action adClosed)
         {
-            if (_rewardedInterstitialAd == null || !_rewardedInterstitialAd.CanShowAd() || !BeginPresentation()) return;
+            if (_rewardedInterstitialAd == null || !_rewardedInterstitialAd.CanShowAd() || !BeginPresentation()) { InvokeSafely(adClosed); AdManager.RewardGiven(false, placement); return; }
             this._placement = placement;
             _rewardGranted = false;
             this._adOpened = adOpened;
             this._adClosed = adClosed;
             this._adCompletionAction = adCompleted;
             var presentingAd = _rewardedInterstitialAd;
-            presentingAd.Show((GoogleMobileAds.Api.Reward reward) =>
+            try
             {
-                if (IsOwnerAlive && ReferenceEquals(_rewardedInterstitialAd, presentingAd)) _rewardGranted = true;
-            });
+                presentingAd.Show((GoogleMobileAds.Api.Reward reward) =>
+                {
+                    if (IsOwnerAlive && ReferenceEquals(_rewardedInterstitialAd, presentingAd)) _rewardGranted = true;
+                });
+            }
+            catch (Exception exception)
+            {
+                EndPresentation();
+                GooglesAdsController.LogWarning("Ad show failed: " + exception.Message);
+                InvokeSafely(adClosed); AdManager.RewardGiven(false, placement);
+            }
         }
 
         protected override void OnDestroy()

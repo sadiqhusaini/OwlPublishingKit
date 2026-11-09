@@ -53,10 +53,10 @@ namespace Owl.Monetization
                         GoogleMobileAds.Api.InterstitialAd.Load(adUnitId, request, (ad, error) =>
                         {
                             complete();
-                            if (!IsCurrentLoad(generation)) { ad?.Destroy(); return; }
+                            if (!IsCurrentLoad(generation)) { DestroyInterstitialAd(ad); return; }
                             if (error != null || ad == null)
                             {
-                                ad?.Destroy();
+                                DestroyInterstitialAd(ad);
                                 GooglesAdsController.LogWarning($"Interstitial({adFloor}): Load failed: {error?.ToString() ?? "SDK returned no ad"}");
                                 InvokeSafely(loadAgain);
                                 return;
@@ -77,14 +77,20 @@ namespace Owl.Monetization
             });
         }
 
+        private static void DestroyInterstitialAd(GoogleMobileAds.Api.InterstitialAd ad)
+        {
+            if (ad != null && CanDestroySimulatedAd()) ad.Destroy();
+        }
+
         public void ShowAd(string placement,Action adCompletion,Action adOpened,Action adClosed)
         {
-            if (_interstitialAd == null || !_interstitialAd.CanShowAd() || !BeginPresentation()) return;
+            if (_interstitialAd == null || !_interstitialAd.CanShowAd() || !BeginPresentation()) { InvokeSafely(adCompletion); InvokeSafely(adClosed); AdManager.CompleteInterstitial(false, placement); return; }
             this._placement = placement;
             this._adCompletionAction = adCompletion;
             this._adOpened = adOpened;
             this._adClosed = adClosed;
-            _interstitialAd?.Show();
+            try { _interstitialAd?.Show(); }
+            catch (Exception exception) { EndPresentation(); GooglesAdsController.LogWarning("Ad show failed: " + exception.Message); InvokeSafely(adCompletion); InvokeSafely(adClosed); AdManager.CompleteInterstitial(false, placement); }
         }
 
 
@@ -98,7 +104,7 @@ namespace Owl.Monetization
         {
             if (_interstitialAd != null)
             {
-                _interstitialAd.Destroy();
+                DestroyInterstitialAd(_interstitialAd);
                 _interstitialAd = null;
             }
         }

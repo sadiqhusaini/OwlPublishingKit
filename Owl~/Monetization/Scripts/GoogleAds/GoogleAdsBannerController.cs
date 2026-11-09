@@ -11,6 +11,7 @@ namespace Owl.Monetization
         
         public GoogleMobileAds.Api.AdPosition position;
         private GoogleMobileAds.Api.BannerView _bannerView;
+        private int _generation;
         
         private Action<bool> _rewardAction;
      
@@ -39,8 +40,10 @@ namespace Owl.Monetization
                 DestroyAd();
             }
             
+            var generation = ++_generation;
             GoogleMobileAds.Common.MobileAdsEventExecutor.ExecuteInUpdate(() =>
             {
+                if (!this || generation != _generation) return;
                 _bannerView = new GoogleMobileAds.Api.BannerView(_adUnitId, GoogleMobileAds.Api.AdSize.Banner, position);
                 ListenToAdEvents();
                 GooglesAdsController.Log($"Banner: Request");
@@ -52,8 +55,12 @@ namespace Owl.Monetization
         
        
     
+        private void OnDestroy() => DestroyAd();
+
         public void DestroyAd()
         {
+            ++_generation;
+            _bannerShown = false;
             if (_bannerView != null)
             {
                 UnListenToAdEvents();
@@ -118,8 +125,11 @@ namespace Owl.Monetization
         
         private void OnBannerAdLoadedCallBack()
         {
+            var view = _bannerView;
+            var generation = _generation;
             GoogleMobileAds.Common.MobileAdsEventExecutor.ExecuteInUpdate(() =>
             {
+                if (!this || view == null || generation != _generation || !ReferenceEquals(view, _bannerView)) return;
                 GooglesAdsController.Log($"Banner: Loaded");
                 _bannerShown = true;
                 _onLoaded?.Invoke();
@@ -128,8 +138,11 @@ namespace Owl.Monetization
 
         private void OnBannerAdLoadFailed(GoogleMobileAds.Api.LoadAdError error)
         {
+            var view = _bannerView;
+            var generation = _generation;
             GoogleMobileAds.Common.MobileAdsEventExecutor.ExecuteInUpdate(() =>
             {
+                if (!this || view == null || generation != _generation || !ReferenceEquals(view, _bannerView)) return;
                 _bannerShown = false;
                 GooglesAdsController.LogWarning($"Banner: Load failed: {error}");
                 _loadAgain?.Invoke();
@@ -138,8 +151,11 @@ namespace Owl.Monetization
 
         private void OnAdPaid(GoogleMobileAds.Api.AdValue adValue)
         {
+            var view = _bannerView;
+            var generation = _generation;
             GoogleMobileAds.Common.MobileAdsEventExecutor.ExecuteInUpdate(() =>
             {
+                if (!this || view == null || generation != _generation || !ReferenceEquals(view, _bannerView)) return;
                 Analytics.MMP.MMPEventTracker.HandleAdPaidEvent(_placement,"Banner",_adUnitId,adValue,_bannerView.GetResponseInfo());
             });
         }
@@ -147,8 +163,11 @@ namespace Owl.Monetization
         
         private void OnAdClicked()
         {
+            var view = _bannerView;
+            var generation = _generation;
             GoogleMobileAds.Common.MobileAdsEventExecutor.ExecuteInUpdate(() =>
             {
+                if (!this || view == null || generation != _generation || !ReferenceEquals(view, _bannerView)) return;
                 Analytics.MMP.MMPEventTracker.HandleAdClickEvent(_placement,"Banner",_adUnitId,_bannerView.GetResponseInfo());  
 
             });
@@ -156,8 +175,11 @@ namespace Owl.Monetization
         
         private void OnAdFullScreenContentOpened()
         {
+            var view = _bannerView;
+            var generation = _generation;
             GoogleMobileAds.Common.MobileAdsEventExecutor.ExecuteInUpdate(() =>
             {
+                if (!this || view == null || generation != _generation || !ReferenceEquals(view, _bannerView)) return;
                 GooglesAdsController.Log($"Banner: Opened");
 
 
@@ -166,8 +188,11 @@ namespace Owl.Monetization
         
         private void OnAdFullScreenContentClosed()
         {
+            var view = _bannerView;
+            var generation = _generation;
             GoogleMobileAds.Common.MobileAdsEventExecutor.ExecuteInUpdate(() =>
             {
+                if (!this || view == null || generation != _generation || !ReferenceEquals(view, _bannerView)) return;
                 GooglesAdsController.Log($"Banner: Closed");
 
                 _bannerShown = false;

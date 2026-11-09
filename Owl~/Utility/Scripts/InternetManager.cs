@@ -31,7 +31,6 @@ namespace Owl.Utility
         private bool _internetStatus;
         private bool _lastInternetStatus;
 
-        private float _savedTimeScale = 1;
 
 
 
@@ -55,7 +54,6 @@ namespace Owl.Utility
             _lastInternetStatus = _internetStatus = IsInternetAvailable = false;
             ConsecutiveFailures = 0;
             _firstTime = true;
-            _savedTimeScale = Time.timeScale;
             if (!_paused && isActiveAndEnabled) _coroutine = StartCoroutine(CheckRoutine());
         }
 
@@ -81,9 +79,8 @@ namespace Owl.Utility
             }
         }
 
-        private System.Collections.IEnumerator GoogleBlankCheck()
+        private System.Collections.IEnumerator Probe(string url)
         {
-            const string url = "https://www.google.com/blank.html";
 
             using var www = UnityEngine.Networking.UnityWebRequest.Get(URLAntiCacheRandomizer(url));
 
@@ -99,17 +96,15 @@ namespace Owl.Utility
             if (!www.isHttpError && !www.isNetworkError)
 #endif
             {
-                _internetStatus= www.downloadedBytes == 0;
-            }
-            else
-            {
+                _internetStatus = true;
             }
         }
 
         private System.Collections.IEnumerator InternetCheck()
         {
             _internetStatus = false;
-            yield return GoogleBlankCheck();
+            yield return Probe("https://www.google.com/blank.html");
+            if (!_internetStatus) yield return Probe("https://www.cloudflare.com/cdn-cgi/trace");
 
             if (_lastInternetStatus !=_internetStatus || _firstTime)
             {

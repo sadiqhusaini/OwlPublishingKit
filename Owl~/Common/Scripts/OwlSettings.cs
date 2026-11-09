@@ -16,7 +16,9 @@ namespace Owl
         
         
         public  string SDKName = "Owl";
+#if UNITY_EDITOR
         public Texture2D IconTexture;
+#endif
         
         [Space]
         public Version SDKVersion;

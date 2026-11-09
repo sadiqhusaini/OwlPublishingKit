@@ -54,6 +54,19 @@ namespace Owl.Monetization
             DestroyAd();
         }
 
+        // Google's editor simulator creates AdBehaviour in some Destroy calls.
+        // If it no longer exists, there is no simulated view left to clean up.
+        protected static bool CanDestroySimulatedAd()
+        {
+#if UNITY_EDITOR
+            foreach (var behaviour in Resources.FindObjectsOfTypeAll<global::AdBehaviour>())
+                if (behaviour) return true;
+            return false;
+#else
+            return true;
+#endif
+        }
+
         protected static void InvokeSafely(Action action)
         {
             try { action?.Invoke(); }
