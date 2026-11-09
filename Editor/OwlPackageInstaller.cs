@@ -131,9 +131,16 @@ namespace OwlPublishingKit
                     "Cancel"))
                 return;
 
-            var guidRemaps = destinationExists
-                ? new Dictionary<string, string>()
-                : FindGuidConflicts(source, sourceMeta);
+            Dictionary<string, string> guidRemaps;
+            try
+            {
+                guidRemaps = BuildGuidRemaps(source, destination, sourceMeta, destinationMeta);
+            }
+            catch (InvalidOperationException exception)
+            {
+                Debug.LogError($"Owl update was cancelled: {exception.Message}");
+                return;
+            }
             CopyDirectory(source, destination, overwrite: destinationExists, guidRemaps: guidRemaps);
 
             if (File.Exists(sourceMeta) && !File.Exists(destinationMeta))
@@ -149,28 +156,45 @@ namespace OwlPublishingKit
             }
         }
 
-        private static Dictionary<string, string> FindGuidConflicts(string source, string sourceMeta)
+        private static readonly Regex MetaGuidPattern = new Regex(@"(?m)^guid:\s*([a-fA-F0-9]{32})\s*$");
+        private static readonly Regex GuidTokenPattern = new Regex(@"(?<![a-fA-F0-9])[a-fA-F0-9]{32}(?![a-fA-F0-9])");
+
+        private static Dictionary<string, string> BuildGuidRemaps(string source, string destination, string sourceMeta, string destinationMeta)
         {
-            var remaps = new Dictionary<string, string>();
+            var remaps = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var assigned = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var metaPaths = new List<string>(Directory.GetFiles(source, "*.meta", SearchOption.AllDirectories));
-            if (File.Exists(sourceMeta))
-                metaPaths.Add(sourceMeta);
+            if (File.Exists(sourceMeta)) metaPaths.Add(sourceMeta);
 
             foreach (var metaPath in metaPaths)
             {
-                var match = Regex.Match(File.ReadAllText(metaPath), @"(?m)^guid:\s*([a-fA-F0-9]{32})\s*$");
-                if (!match.Success)
-                    continue;
+                var originalGuid = ReadMetaGuid(metaPath);
+                if (originalGuid == null) continue;
+                var targetMeta = metaPath == sourceMeta
+                    ? destinationMeta
+                    : Path.Combine(destination, metaPath.Substring(source.Length + 1));
+                var installedGuid = File.Exists(targetMeta) ? ReadMetaGuid(targetMeta) : null;
+                if (File.Exists(targetMeta) && installedGuid == null)
+                    throw new InvalidOperationException($"Cannot read the GUID in {targetMeta}. No files were changed.");
 
-                var originalGuid = match.Groups[1].Value;
-                if (string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(originalGuid)) || remaps.ContainsKey(originalGuid))
-                    continue;
+                var targetGuid = installedGuid ?? originalGuid;
+                if (installedGuid == null && !string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(originalGuid)))
+                    targetGuid = Guid.NewGuid().ToString("N");
 
-                remaps.Add(originalGuid, Guid.NewGuid().ToString("N"));
-                Debug.LogWarning($"Owl found an existing asset with GUID {originalGuid}; it will assign a new GUID to the installed copy and update Owl asset references.");
+                if (assigned.TryGetValue(originalGuid, out var previous) &&
+                    !string.Equals(previous, targetGuid, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException($"The package GUID {originalGuid} maps to multiple installed assets. No files were changed.");
+                assigned[originalGuid] = targetGuid;
+                if (!string.Equals(originalGuid, targetGuid, StringComparison.OrdinalIgnoreCase))
+                    remaps[originalGuid] = targetGuid;
             }
-
             return remaps;
+        }
+
+        private static string ReadMetaGuid(string path)
+        {
+            var match = MetaGuidPattern.Match(File.ReadAllText(path));
+            return match.Success ? match.Groups[1].Value : null;
         }
 
         private static void CopyDirectory(string source, string destination, bool overwrite, Dictionary<string, string> guidRemaps)
@@ -180,6 +204,9 @@ namespace OwlPublishingKit
             foreach (var file in Directory.GetFiles(source))
             {
                 var target = Path.Combine(destination, Path.GetFileName(file));
+                // Keep installed metadata: scenes and other assets refer to its GUID.
+                if (file.EndsWith(".meta", StringComparison.OrdinalIgnoreCase) && File.Exists(target))
+                    continue;
                 if (overwrite || !File.Exists(target))
                     CopyFile(file, target, overwrite, guidRemaps);
             }
@@ -200,8 +227,8 @@ namespace OwlPublishingKit
             }
 
             var text = File.ReadAllText(source);
-            foreach (var remap in guidRemaps)
-                text = text.Replace(remap.Key, remap.Value);
+            text = GuidTokenPattern.Replace(text, match =>
+                guidRemaps.TryGetValue(match.Value, out var replacement) ? replacement : match.Value);
             File.WriteAllText(destination, text);
         }
 
@@ -211,7 +238,8 @@ namespace OwlPublishingKit
             return extension == ".meta" || extension == ".prefab" || extension == ".unity" ||
                    extension == ".asset" || extension == ".controller" || extension == ".anim" ||
                    extension == ".overrideController" || extension == ".mask" || extension == ".mat" ||
-                   extension == ".playable" || extension == ".preset";
+                   extension == ".playable" || extension == ".preset" || extension == ".asmdef" ||
+                   extension == ".asmref";
         }
     }
 }
